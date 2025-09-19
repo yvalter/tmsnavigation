@@ -403,7 +403,7 @@
 
     <script>
         // Global variables for 3D viewer
-        let scene, camera, renderer, mesh, targetMarker;
+        let scene, camera, renderer, mesh, brainMesh, targetMarker;
         let isMouseDown = false;
         let mouseX = 0, mouseY = 0;
         let targetX = 0, targetY = 0;
@@ -549,6 +549,12 @@
                 scene.remove(mesh);
                 mesh = null;
             }
+
+            if (brainMesh) {
+                scene.remove(brainMesh);
+                brainMesh = null;
+            }
+
             if (targetMarker) {
                 scene.remove(targetMarker);
                 targetMarker = null;
@@ -579,6 +585,31 @@
                 mesh.scale.set(scale, scale, scale);
                 mesh.rotation.x = -Math.PI / 2;
                 mesh.rotation.y = Math.PI / 16;
+
+                // Load brain STL
+                const brainStlUrl = '/static/scaled_brain.stl?' + timestamp;
+                loadSTL(brainStlUrl, function (brainGeometry) {
+                    console.log('Brain STL loaded successfully');
+    
+                    const brainMaterial = new THREE.MeshPhongMaterial({ 
+                        color: 0x888888,
+                        specular: 0x111111,
+                        transparent: false,
+                        opacity: 1.0, 
+                        shininess: 30, 
+                    });
+                    brainMesh = new THREE.Mesh(brainGeometry, brainMaterial);
+                    scene.add(brainMesh);
+
+                    // Apply same transformations as head mesh (but don't center independently)
+                    brainMesh.position.sub(center);  // Use the HEAD's center, not brain's center
+                    brainMesh.scale.set(scale, scale, scale);
+                    brainMesh.rotation.x = -Math.PI / 2;
+                    brainMesh.rotation.y = Math.PI / 16;
+                }, function(error) {
+                    console.warn('Could not load brain STL:', error);
+                    // Continue without brain model - this is optional
+                });
 
                 // Add target marker - FIXED POSITIONING
                 console.log('Target point from server:', targetPoint);
