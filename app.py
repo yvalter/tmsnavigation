@@ -104,52 +104,6 @@ def calculate_abcs(head_circ, tragus_tragus, nasion_inion):
         logger.error(f"Error in calculate_abcs: {e}")
         raise
 
-def calculate_f3(dx, dy, circum):
-    """Calculate F3 coordinates with input validation."""
-    try:
-        logger.debug(f"Calculating F3 for: dx={dx}, dy={dy}, circum={circum}")
-        
-        # Input validation
-        if any(x <= 0 for x in [dx, dy, circum]):
-            raise ValueError("All measurements must be positive")
-            
-        r1 = dx * 0.4
-        r2 = dy * 0.4
-        
-        # Check for division by zero
-        if r1 == 0:
-            raise ValueError("dx cannot be zero")
-            
-        mab = ((r1 * -0.58779) + (r2 / 2)) / r1
-        
-        denominator = (r2 * 0.4694716) - (r1 / 2)
-        if abs(denominator) < 1e-10:
-            raise ValueError("Invalid measurement combination causing division by zero")
-            
-        mcd = (r2 * -0.8829476) / denominator
-        
-        if abs(mab - mcd) < 1e-10:
-            raise ValueError("Invalid measurement combination")
-            
-        xf = (r2 - (mcd * r1)) / (2 * (mab - mcd))
-        yf = (mab * xf) - (r2 / 2)
-        rf = math.hypot(xf, yf) * 0.91
-        ang = math.degrees(math.atan2(yf, xf)) + 90
-        circdist = (ang / 90) * (circum / 4)
-        
-        result = {
-            'circumferential_dist': circdist,
-            'vertex_dist': rf,
-            'vertex_dist_adjusted': rf + 0.35,
-            'angle': ang
-        }
-        
-        logger.debug(f"F3 calculation result: {result}")
-        return result
-        
-    except Exception as e:
-        logger.error(f"Error in calculate_f3: {e}")
-        raise
 
 def scale_stl(input_path, output_path, scale_matrix, session_id=None):
     """Scale STL file and save to output path. Returns error response if failed."""
